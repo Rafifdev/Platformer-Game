@@ -1,55 +1,151 @@
+# Import dan Inisialisasi
 import pygame
 pygame.init()
 
+# Ukuran layar
 screen_height = 800
 screen_width = 800
+
+# Ukuran tiap kotak
 tile_size = 40
 
+# Membuat layar
 screen = pygame.display.set_mode((screen_height,screen_width))
 pygame.display.set_caption("Platformer Game by Andi, Bagus & Rafif")
+
+# Initialisasi gambar
 bg_img = pygame.image.load('img/sky.jpg') 
 sun_img = pygame.image.load('img/sun.png')
 
+# Membuat Grid Pada Layar
 def white_grid():
   for line in range(0, 21):
     pygame.draw.line(screen, (255,255,255), (0, line * tile_size), (screen_width, line * tile_size))
     pygame.draw.line(screen, (255,255,255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+# Membuat player
 class Player():
   def __init__(self, x, y):
     img = pygame.image.load('img/player1.png')
+    
+    # Menyimpan animasi untuk gerakan ke kanan.
+    self.images_right = []
+    
+    # Menyimpan animasi untuk gerakan ke kanan.
+    self.images_left = []
+    
+    self.index = 0
+    self.counter = 0
+    
+    # Animasi
+    for num in range(1, 5):
+      
+      # inisialisasi gambar
+      img_right = pygame.image.load(f'img/player{num}.png')
+      
+      # Mengatur ukuran gambar player
+      img_right = pygame.transform.scale(img_right, (40, 80))
+      
+      # Membalik gambar horizontal untuk animasi ke kiri.
+      img_left = pygame.transform.flip(img_right, True, False)
+      
+      # Memasukan ke array
+      self.images_right.append(img_right)
+      self.images_left.append(img_left)
+    
+    # Gambar awal pemain (player 1)
+    self.image = self.images_right[self.index]
+    
+    # Mengatur ukuran gambar player
     self.image = pygame.transform.scale(img, (40, 80))
+    
+    # Mengambil posisi gambar plaeyr
     self.rect = self.image.get_rect()
+    
+    # Mengatur ukuran gambar player X dan Y
     self.rect.x = x
     self.rect.y = y
+    
+    self.width = self.image.get_width()
+    self.height = self.image.get_height()
+    
     self.graf_y = 0
     self.jumped = False
+    self.direction = 0
     
+  # function untuk pergerakan
   def update(self):
     mx = 0
     my = 0
+    walk_cooldown = 40
     
+    # Memeriksa tombol yang di pencet
     key = pygame.key.get_pressed()
-    if key[pygame.K_SPACE] and self.jumped == False:
+    
+    # Tombol untuk melompat ( W )
+    if key[pygame.K_w] and self.jumped == False:
       self.graf_y = -5
-      self.jumped = True
-    if key[pygame.K_SPACE] == False:
-      self.jumped = False
-    if key[pygame.K_LEFT]:
-      mx -= 0.8
-    if key[pygame.K_RIGHT]:
-      mx += 0.8
       
+      # Saat di pencet menjadi true
+      self.jumped = True
+
+    # Saat tidak di pencet menjadi False
+    if key[pygame.K_w] == False:
+      self.jumped = False
+    
+    # Tombol untuk jalan ke kiri ( A )
+    if key[pygame.K_a]:
+      mx -= 0.8
+      self.counter += 1
+      self.direction = -1
+    
+    # Tombol untuk jalan ke kanan ( D )
+    if key[pygame.K_d]:
+      mx += 0.8
+      self.counter += 1
+      self.direction = 1
+    
+    # Kalau tombol tidak di pencet = false
+    if key[pygame.K_a] == False and key[pygame.K_d] == False:
+      self.counter = 0
+      self.index = 0
+      
+      if self.direction == 1:
+        self.image = self.images_right[self.index]
+      if self.direction == -1:
+        self.image = self.images_left[self.index]
+
+    #Animasi
+    if self.counter > walk_cooldown:
+      self.counter = 0	
+      self.index += 1
+      if self.index >= len(self.images_right):
+        self.index = 0
+      if self.direction == 1:
+        self.image = self.images_right[self.index]
+      if self.direction == -1:
+        self.image = self.images_left[self.index]
+        
     if key[pygame.K_1]:
       my -= 1.5
-    if key[pygame.K_2]:
-      my += 1.5
       
     # Gravitasi
     self.graf_y += 0.1
     if self.graf_y >= 1:
       self.graf_y = 0.1
     my += self.graf_y
+    
+    for tile in world.tile_list:
+      if tile[1].colliderect(self.rect.x + mx, self.rect.y, self.width, self.height):
+        mx = 0
+      if tile[1].colliderect(self.rect.x, self.rect.y + my, self.width, self.height):
+        if self.graf_y < 0:
+          my = tile[1].bottom - self.rect.top
+          self.graf_y = 0
+        elif self.graf_y >= 0:
+          my = tile[1].top - self.rect.bottom
+          self.graf_y = 0
+
     
     self.rect.x += mx
     self.rect.y += my
@@ -65,9 +161,11 @@ class Player():
         
     if self.rect.top < 0:
         self.rect.top = 0
-
-    
+        
+    # Menampilkan gambar player        
     screen.blit(self.image, self.rect)
+    pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+
 
 class World():
   def __init__(self, data):
@@ -120,6 +218,7 @@ class World():
   def draw(self):
     for tile in self.tile_list:
         screen.blit(tile[0], tile[1])
+        pygame.draw.rect(screen, (255, 255, 255), tile[1], 1)
 
 world_map = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
