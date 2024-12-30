@@ -115,7 +115,7 @@ class Player():
       if self.direction == -1:
         self.image = self.images_left[self.index]
 
-    #Animasi
+    # Membuat Animasi
     if self.counter > walk_cooldown:
       self.counter = 0	
       self.index += 1
@@ -125,7 +125,8 @@ class Player():
         self.image = self.images_right[self.index]
       if self.direction == -1:
         self.image = self.images_left[self.index]
-        
+    
+    # Secret button
     if key[pygame.K_1]:
       my -= 1.5
       
@@ -145,32 +146,31 @@ class Player():
         elif self.graf_y >= 0:
           my = tile[1].top - self.rect.bottom
           self.graf_y = 0
-
-    
+          
+    # Membatasi gerakan player dalam layar.
     self.rect.x += mx
     self.rect.y += my
-
     if self.rect.bottom > screen_height:
       self.rect.bottom = screen_height
-    
     if self.rect.right > screen_width:
         self.rect.right = screen_width
-
     if self.rect.left < 0:
         self.rect.left = 0
-        
     if self.rect.top < 0:
         self.rect.top = 0
-        
+
     # Menampilkan gambar player        
     screen.blit(self.image, self.rect)
-    pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+    
+    # Untuk membuat border di sekitar player
+    #pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
-
+# Class world
 class World():
   def __init__(self, data):
     self.tile_list = [] 
     
+    # Inisialisasi gambar ke variabel
     dirt_img = pygame.image.load('img/dirt.png')
     grass_img = pygame.image.load('img/grass.png')
     fire_img = pygame.image.load('img/fire.png')
@@ -181,6 +181,7 @@ class World():
       col_count = 0 
       for tile in row:
         
+        # Jika tile bernilai 1, gambar tanah (dirt).
         if tile == 1:
           img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
           img_rect = img.get_rect()
@@ -188,7 +189,8 @@ class World():
           img_rect.y = row_count * tile_size
           tile = (img, img_rect)
           self.tile_list.append(tile)
-          
+        
+        # Jika tile bernilai 2, gambar rumput (grass).
         if tile == 2:
           img = pygame.transform.scale(grass_img, (tile_size, tile_size))
           img_rect = img.get_rect()
@@ -196,7 +198,8 @@ class World():
           img_rect.y = row_count * tile_size
           tile = (img, img_rect)
           self.tile_list.append(tile)
-          
+        
+        # Jika tile bernilai 3, gambar slime.
         if tile == 3:
           img = pygame.transform.scale(slime_img,(tile_size, tile_size))
           img_rect = img.get_rect()
@@ -204,7 +207,8 @@ class World():
           img_rect.y = row_count * tile_size
           tile = (img, img_rect)
           self.tile_list.append(tile)
-        
+          
+        # Jika tile bernilai 6, gambar api (fire).
         if tile == 6:
           img = pygame.transform.scale(fire_img, (tile_size, tile_size))
           img_rect = img.get_rect()
@@ -215,10 +219,12 @@ class World():
         col_count += 1 
       row_count += 1 
 
+  # Fungsi untuk menggambar tile pada layar.
   def draw(self):
     for tile in self.tile_list:
         screen.blit(tile[0], tile[1])
-        pygame.draw.rect(screen, (255, 255, 255), tile[1], 1)
+        # Untuk membuat border di sekitar tile
+        #pygame.draw.rect(screen, (255, 255, 255), tile[1], 1)
 
 world_map = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
@@ -243,18 +249,24 @@ world_map = [
   [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
+# Inisialisasi class
 world = World(world_map)
 player = Player(80, 680)
 
+# Kondisi awal start = true
 start = True
 while start:
   screen.blit(bg_img, (0, 0)) 
   screen.blit(sun_img, (350, 60))
 
+  # Menjalankan class world
   world.draw()
+  
+  # Menjalanlan class player
   player.update()
   # white_grid() 
 
+  # Jika quit start menjadi False
   for event in pygame.event.get():
       if event.type == pygame.QUIT:
           start = False
