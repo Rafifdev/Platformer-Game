@@ -33,7 +33,7 @@ score = 0
 
 # Inisialisasi warna
 white = (255, 255, 255)
-blue = (0, 0, 255)
+blue = (255, 255, 255)
 
 # Memuat gambar latar belakang dan tombol
 bg_img = pygame.image.load('img/sky.png')
